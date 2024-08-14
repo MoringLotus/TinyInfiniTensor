@@ -146,6 +146,8 @@ namespace infini
     void GraphObj::dataMalloc()
     {
         // topological sorting first
+
+        
         IT_ASSERT(topo_sort() == true);
 
         // =================================== 作业 ===================================
