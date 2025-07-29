@@ -9,8 +9,8 @@ namespace infini
 {
     TEST(Allocator, testAlloc)
     {
-        Shape shape = Shape{1, 2, 2, 3};
-        Runtime runtime = NativeCpuRuntimeObj::getInstance();
+        Shape shape = Shape{1, 2, 2, 3}; // Shape <--> vector<int>
+        Runtime runtime = NativeCpuRuntimeObj::getInstance(); 
         Tensor a = make_ref<TensorObj>(shape, DataType::Float32, runtime);
         Tensor b = make_ref<TensorObj>(shape, DataType::Float32, runtime);
         Tensor c = make_ref<TensorObj>(shape, DataType::Float32, runtime);
@@ -35,8 +35,7 @@ namespace infini
         Tensor a = make_ref<TensorObj>(shape, DataType::Float32, runtime);
         Tensor b = make_ref<TensorObj>(shape, DataType::Float32, runtime);
         Tensor c = make_ref<TensorObj>(shape, DataType::Float32, runtime);
-        Tensor d =
-            make_ref<TensorObj>(Shape{2, 2, 2, 3}, DataType::Float32, runtime);
+        Tensor d = make_ref<TensorObj>(Shape{2, 2, 2, 3}, DataType::Float32, runtime);
         Allocator allocator = Allocator(runtime);
         // allocate a->b->c
         allocator.alloc(a->getBytes());
