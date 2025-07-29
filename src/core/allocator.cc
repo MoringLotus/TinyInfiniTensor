@@ -77,6 +77,7 @@ namespace infini
             // Merge with previous block
             size += prev->second;
             addr = prev->first; // Update address to the start of the merged block
+            
             freeBlocks.erase(prev);
         }
         freeBlocks.emplace(addr, size); // Store the freed block
