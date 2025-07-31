@@ -154,6 +154,14 @@ namespace infini
         // =================================== 作业 ===================================
 
         allocator.info();
+        for(auto it = tensors.begin(); it != tensors.end(); it++){
+            auto tensor = *it;
+            size_t size = tensor->getBytes();
+            size_t addr = allocator.alloc(size);
+            IT_ASSERT(addr != 0);
+            Blob blob = make_ref<BlobObj>(tensor->getRuntime(), (void *)(allocator.getPtr() + addr));
+            tensor->setDataBlob(blob);
+        }
     }
 
     Tensor GraphObj::addTensor(Shape dim, DataType dtype)
