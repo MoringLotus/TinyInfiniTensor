@@ -34,28 +34,41 @@ namespace infini
         // =================================== 作业 ===================================
         if (freeBlocks.empty())
         {
-            used += size;
-            peak = std::max(peak, used);
-            freeBlocks.emplace(0, size); // Allocate from the start
-            return 0;
+            freeBlocks[0] = 4096; // Initially, all memory is free
         }
         for(auto it = freeBlocks.begin(); it != freeBlocks.end(); it ++){
             auto [addr, blockSize] = *it;
-            if(blockSize >= size){
-                size_t upper_addr = freeBlocks.upper_bound(addr)->first;
-                size_t gap = upper_addr - (addr + blockSize);
-                if(gap >= size){
-                    used += size;
-                    freeBlocks[addr + blockSize] = gap; // Update the free block after allocation
-                    return addr + blockSize;
+            if(blockSize >= size){ //blockSize 是可用空间
+                if(blockSize > size){
+                    // Split the block if it's larger than requested size
+                    freeBlocks[addr + size] = blockSize - size;
                 }
+                freeBlocks.erase(it);
+                used += size;
+                peak = std::max(peak, used);
+                return it->first;
             }
         }
-        used += size;
-        peak = std::max(peak, used);
-        size_t lastAddr = freeBlocks.rbegin()->first + freeBlocks.rbegin()->second;
-        freeBlocks.emplace(lastAddr, size); // Allocate
-        return lastAddr;
+        
+        return 0;
+
+
+
+        // if (this->freeBlocks.empty())
+        //     this->freeBlocks[0] = 1024;
+        // for (auto it = this->freeBlocks.begin(); it != this->freeBlocks.end(); ++it)
+        // {
+        //     if (it->second >= size)
+        //     {
+        //         if (it->second > size)
+        //             this->freeBlocks[it->first + size] = it->second - size;
+        //         auto ans = it->first;
+        //         this->freeBlocks.erase(it);
+        //         this->used += size;
+        //         this->peak = (this->peak >= this->used) ? this->peak : this->used;
+        //         return ans;
+        //     }
+        // }
     }
 
     void Allocator::free(size_t addr, size_t size)
@@ -65,22 +78,21 @@ namespace infini
         // =================================== 作业 ===================================
         // TODO: 设计一个算法来回收内存
         // =================================== 作业 =================================== 
-        used -= size;
-        auto next = freeBlocks.upper_bound(addr);
-        if(next != freeBlocks.end() && addr + size == next -> first){ // 再次确保是否物理相邻
-            // Merge with next block
-            size += next->second;
-            freeBlocks.erase(next);
+        freeBlocks[addr] = size;
+        auto it = freeBlocks.find(addr);
+        auto nextIt = std::next(it);
+        if (nextIt != freeBlocks.end() && it->first + it->second == nextIt->first)
+        {
+            it->second += nextIt->second;
+            freeBlocks.erase(nextIt);
         }
-        auto prev = freeBlocks.lower_bound(addr);
-        if(prev != freeBlocks.begin() && prev -> first + prev->second == addr){ // 再次确保是否物理相邻
-            // Merge with previous block
-            size += prev->second;
-            addr = prev->first; // Update address to the start of the merged block
-            
-            freeBlocks.erase(prev);
+        auto prevIt = std::prev(it);
+        if (it != freeBlocks.begin() && prevIt->first + prevIt->second == it->first)
+        {
+            prevIt->second += it->second;
+            freeBlocks.erase(it);
         }
-        freeBlocks.emplace(addr, size); // Store the freed block
+        used = used - size;
     }
 
     void *Allocator::getPtr()

@@ -10,7 +10,32 @@ Shape infer_broadcast(const Shape &A, const Shape &B) {
     // REF: https://github.com/onnx/onnx/blob/main/docs/Broadcasting.md
     // =================================== 作业 ===================================
     
-    return {};
+    // 获取输入张量的维度
+    size_t rankA = A.size();
+    size_t rankB = B.size();
+    size_t maxRank = std::max(rankA, rankB);
+    Shape result(maxRank);
+
+    // 从右向左逐维度比较
+    for (size_t i = 0; i < maxRank; ++i) {
+        // 获取当前维度（从右向左）
+        size_t dimA = (i < rankA) ? A[rankA - 1 - i] : 1;
+        size_t dimB = (i < rankB) ? B[rankB - 1 - i] : 1;
+
+        // 检查兼容性
+        if (dimA == dimB) {
+            result[maxRank - 1 - i] = dimA;
+        } else if (dimA == 1) {
+            result[maxRank - 1 - i] = dimB;
+        } else if (dimB == 1) {
+            result[maxRank - 1 - i] = dimA;
+        } else {
+            // 不兼容，返回空 Shape
+            return {};
+        }
+    }
+
+    return result;
 }
 
 int get_real_axis(const int &axis, const int &rank) {
